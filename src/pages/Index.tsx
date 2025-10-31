@@ -21,45 +21,26 @@ const Index = () => {
         description: "Пожалуйста, подождите",
       });
 
-      // Simulate document parsing (in real implementation, use a library like mammoth.js)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Import mammoth dynamically
+      const mammoth = await import('mammoth');
       
-      // Mock content for demonstration
-      const mockContent: DocumentContent = {
-        text: `ՀՏԴ՝ 336.5
-        
-ՄԱՍՆԱԿՑԱՅԻՆ ԲՅՈՒՋԵՏԱՎՈՐՈՒՄԸ ՈՐՊԵՍ ՊԵՏԱԿԱՆ ԿԱՌԱՎԱՐՄԱՆ և ՏԵՂԱԿԱՆ ԻՆՔՆԱԿԱՌԱՎԱՐՄԱՆ ԳՈՐԾԻՔ
-
-ԱՆՈՒՇ ԽԱՉԱՏՐՅԱՆ
-
-ՀՊՏՀ ԳՄ Ընդհանուր տնտեսագիտության և բնագիտական առարկաների ամբիոնի ասիստենտ
-
-Մասնակցային բյուջետավորումը հանրային կառավարման ժամանակակից գործիք է...
-
-Հիմնաբառեր՝ մասնակցային բյուջետավորում, պետական կառավարում
-
-PARTICIPATORY BUDGETING AS A TOOL OF PUBLIC ADMINISTRATION
-
-ANUSH KHACHATRYAN
-
-Assistant, Department of General Economics
-
-Abstract: Participatory budgeting is a modern tool...
-
-Keywords: participatory budgeting, public governance
-
-УЧАСТИЕ В БЮДЖЕТИРОВАНИИ
-
-АНУШ ХАЧАТРЯН
-
-Аннотация: Участие в бюджетировании является...
-
-Գրականություն
-1. Smith J. Public Governance. 2020.`,
-        pages: 10,
+      // Read file as array buffer
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Extract text and metadata from DOCX
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      const text = result.value;
+      
+      // Estimate page count (approximate: 450 words per page)
+      const wordCount = text.split(/\s+/).length;
+      const pages = Math.ceil(wordCount / 450);
+      
+      const content: DocumentContent = {
+        text: text,
+        pages: pages,
       };
       
-      const validationResults = validateDocument(mockContent);
+      const validationResults = validateDocument(content);
       setResults(validationResults);
       
       const totalChecks = validationResults.reduce((sum, cat) => sum + cat.checks.length, 0);
@@ -78,8 +59,9 @@ Keywords: participatory budgeting, public governance
         });
       }
     } catch (error) {
+      console.error("Error processing document:", error);
       toast.error("Ошибка обработки", {
-        description: "Не удалось обработать документ",
+        description: "Не удалось обработать документ. Убедитесь, что файл в формате .docx",
       });
     } finally {
       setIsProcessing(false);
