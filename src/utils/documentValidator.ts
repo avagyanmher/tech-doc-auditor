@@ -55,8 +55,8 @@ function validateStructure(lines: string[], pageCount: number, fullText: string)
     
     // Check if line is mostly uppercase and long enough to be a title
     if (line.length > 15 && line.length < 200) {
-      const uppercaseChars = (line.match(/[A-ZԱ-ԖԸ-ՖА-ЯЁ]/g) || []).length;
-      const totalLetters = (line.match(/[A-Za-zԱ-Ֆա-ևА-Яа-яЁё]/g) || []).length;
+      const uppercaseChars = (line.match(/[A-Z\u0531-\u0556А-ЯЁ]/g) || []).length;
+      const totalLetters = (line.match(/[A-Za-z\u0531-\u0556\u0561-\u0587А-Яа-яЁё]/g) || []).length;
       if (totalLetters > 10 && uppercaseChars / totalLetters > 0.8) {
         hasUppercaseTitle = true;
         titleLineIndex = i;
@@ -81,12 +81,12 @@ function validateStructure(lines: string[], pageCount: number, fullText: string)
       const line = lines[i].trim();
       // Author line should be relatively short and contain mostly letters
       if (line.length > 5 && line.length < 80) {
-        const hasLetters = /[A-ZԱ-Ֆа-яА-Я]/i.test(line);
+        const hasLetters = /[A-Z\u0531-\u0556\u0561-\u0587а-яА-Я]/i.test(line);
         const notTooLong = line.length < 100;
         // Check if it looks like a name (short, capitalized words)
         const words = line.split(/\s+/);
         const looksLikeName = words.length >= 1 && words.length <= 5 && 
-                             words.some(w => /^[A-ZԱ-ԖԸ-Ֆ]/.test(w));
+                             words.some(w => /^[A-Z\u0531-\u0556]/.test(w));
         if (hasLetters && notTooLong && looksLikeName) {
           hasAuthor = true;
           break;
@@ -202,7 +202,7 @@ function validateMultilingualContent(lines: string[], fullText: string): Validat
     return trimmed.length > 20 && 
            trimmed === trimmed.toUpperCase() && 
            /[А-ЯЁ]/.test(trimmed) &&
-           /^[А-ЯЁ\s]+$/.test(trimmed);
+           /^[А-ЯЁ\s\-\d]+$/.test(trimmed);
   });
   checks.push({
     name: "Заголовок на русском ЗАГЛАВНЫМИ",
